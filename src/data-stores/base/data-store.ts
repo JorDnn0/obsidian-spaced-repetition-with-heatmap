@@ -11,6 +11,7 @@ export interface IDataStore {
         originalQuestionText: string,
         storageInfo: RepItemStorageInfo,
     ): RepItemScheduleInfo[];
+    questionExtractCardIds?(originalQuestionText: string): (string | null)[];
     questionRemoveScheduleInfo(questionText: string): string;
     questionWrite(question: Question): Promise<void>;
     questionWriteSchedule(question: Question): Promise<void>;

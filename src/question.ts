@@ -9,6 +9,7 @@ import { Note } from "src/note";
 import { ParsedQuestionInfo } from "src/parser";
 import { SRSettings } from "src/settings";
 import { TopicPath, TopicPathList, TopicPathWithWs } from "src/topic-path";
+import { generateCardId } from "src/utils/card-id";
 import { cyrb53, MultiLineTextFinder, stringTrimStart, TextDirection } from "src/utils/strings";
 
 export enum CardType {
@@ -221,6 +222,23 @@ export class Question {
         this.cards.forEach((card) => (card.question = this));
     }
 
+    /**
+     * Ensures all cards have card IDs. Generates IDs for cards that don't have them.
+     * Marks the question as changed if any IDs were generated.
+     */
+    ensureCardIds(): void {
+        let hasChanges = false;
+        for (const card of this.cards) {
+            if (!card.cardId) {
+                card.cardId = generateCardId();
+                hasChanges = true;
+            }
+        }
+        if (hasChanges) {
+            this.hasChanged = true;
+        }
+    }
+
     formatForNote(settings: SRSettings): string {
         let result: string = this.questionText.formatTopicAndQuestion();
         const blockId: string = this.questionText.obsidianBlockId;
@@ -273,6 +291,9 @@ export class Question {
     }
 
     async writeQuestion(settings: SRSettings): Promise<void> {
+        // Ensure all cards have IDs before writing
+        this.ensureCardIds();
+
         const fileText: string = await this.note.file.read();
 
         const newText: string = this.updateQuestionWithinNoteText(fileText, settings);

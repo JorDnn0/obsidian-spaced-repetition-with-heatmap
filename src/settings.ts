@@ -60,6 +60,11 @@ export interface SRSettings {
     dataStore: string;
     cardCommentOnSameLine: boolean;
 
+    // review history
+    enableReviewHistory: boolean;
+    reviewHistoryFilePath: string;
+    autoAssignCardIds: boolean;
+
     // logging
     showSchedulingDebugMessages: boolean;
     showParserDebugMessages: boolean;
@@ -120,6 +125,11 @@ export const DEFAULT_SETTINGS: SRSettings = {
     dataStore: DataStoreName.NOTES,
     cardCommentOnSameLine: false,
 
+    // review history
+    enableReviewHistory: true,
+    reviewHistoryFilePath: ".obsidian/sr-review-history.json",
+    autoAssignCardIds: true,
+
     // logging
     showSchedulingDebugMessages: false,
     showParserDebugMessages: false,
@@ -151,6 +161,17 @@ export function upgradeSettings(settings: SRSettings) {
 
         if (settings.convertCurlyBracketsToClozes)
             settings.clozePatterns.push("{{[123;;]answer[;;hint]}}");
+    }
+
+    // Initialize review history settings if not present
+    if (settings.enableReviewHistory === undefined) {
+        settings.enableReviewHistory = true;
+    }
+    if (settings.reviewHistoryFilePath === undefined) {
+        settings.reviewHistoryFilePath = ".obsidian/sr-review-history.json";
+    }
+    if (settings.autoAssignCardIds === undefined) {
+        settings.autoAssignCardIds = true;
     }
 }
 

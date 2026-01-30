@@ -4,6 +4,7 @@ import { ReviewResponse } from "src/algorithms/base/repetition-item";
 import { Card } from "src/card";
 import { TICKS_PER_DAY } from "src/constants";
 import { DataStore } from "src/data-stores/base/data-store";
+import { ReviewHistoryStore } from "src/data-stores/review-history-store";
 import { CardListType, Deck } from "src/deck";
 import { IDeckTreeIterator } from "src/deck-tree-iterator";
 import { DueDateHistogram } from "src/due-date-histogram";
@@ -240,6 +241,11 @@ export class FlashcardReviewSequencer implements IFlashcardReviewSequencer {
     }
 
     async processReviewReviewMode(response: ReviewResponse): Promise<void> {
+        // Ensure card has an ID before processing review
+        if (!this.currentCard.cardId) {
+            this.currentQuestion.ensureCardIds();
+        }
+
         if (response != ReviewResponse.Reset || this.currentCard.hasSchedule) {
             const oldSchedule = this.currentCard.scheduleInfo;
 
@@ -248,6 +254,24 @@ export class FlashcardReviewSequencer implements IFlashcardReviewSequencer {
             //  (2) or reset a due card
             // Nothing to do if a user resets a new card
             this.currentCard.scheduleInfo = this.determineCardSchedule(response, this.currentCard);
+
+            // Record review history (if enabled)
+            if (this.settings.enableReviewHistory) {
+                try {
+                    const reviewHistoryStore = ReviewHistoryStore.getInstance(
+                        undefined,
+                        this.settings,
+                    );
+                    await reviewHistoryStore.recordReview(
+                        this.currentCard.cardId,
+                        response,
+                        this.currentCard.scheduleInfo,
+                    );
+                } catch (error) {
+                    // Log error but don't fail the review
+                    console.error("Failed to record review history:", error);
+                }
+            }
 
             // Update the source file with the updated schedule
             await DataStore.getInstance().questionWriteSchedule(this.currentQuestion);
@@ -261,6 +285,23 @@ export class FlashcardReviewSequencer implements IFlashcardReviewSequencer {
                 this.dueDateFlashcardHistogram.decrement(nDays);
             }
             this.dueDateFlashcardHistogram.increment(this.currentCard.scheduleInfo.interval);
+        } else {
+            // Even for reset of new cards, record the history (if enabled)
+            if (this.currentCard.cardId && this.settings.enableReviewHistory) {
+                try {
+                    const reviewHistoryStore = ReviewHistoryStore.getInstance(
+                        undefined,
+                        this.settings,
+                    );
+                    await reviewHistoryStore.recordReview(
+                        this.currentCard.cardId,
+                        response,
+                        null,
+                    );
+                } catch (error) {
+                    console.error("Failed to record review history:", error);
+                }
+            }
         }
 
         // Move/delete the card

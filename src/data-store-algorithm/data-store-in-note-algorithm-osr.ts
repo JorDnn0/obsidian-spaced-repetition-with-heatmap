@@ -102,6 +102,10 @@ export class DataStoreInNoteAlgorithmOsr implements IDataStoreAlgorithm {
         } else {
             result = `!${RepItemScheduleInfoOsr.dummyDueDateForNewCard},${RepItemScheduleInfoOsr.initialInterval},${this.settings.baseEase}`;
         }
+        // Append card ID (mandatory)
+        if (card.cardId) {
+            result += `:card-id:${card.cardId}`;
+        }
         return result;
     }
 }

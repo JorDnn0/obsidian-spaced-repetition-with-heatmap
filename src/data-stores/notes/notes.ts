@@ -34,6 +34,7 @@ export class StoreInNotes implements IDataStore {
             const dueDateStr = match[1];
             const interval = parseInt(match[2]);
             const ease = parseInt(match[3]);
+            const cardId: string | undefined = match[4]; // Extract card ID if present
             const dueDate: Moment = DateUtil.dateStrToMoment(dueDateStr);
             let info: RepItemScheduleInfo;
             if (
@@ -46,8 +47,30 @@ export class StoreInNotes implements IDataStore {
                     dueDate.valueOf() - globalDateProvider.today.valueOf();
 
                 info = new RepItemScheduleInfoOsr(dueDate, interval, ease, delayBeforeReviewTicks);
+                // Store card ID in the schedule info object for later retrieval
+                if (cardId) {
+                    (info as any).cardId = cardId;
+                }
             }
             result.push(info);
+        }
+        return result;
+    }
+
+    /**
+     * Extracts card IDs from the question text's HTML comments
+     * Returns an array of card IDs in the same order as the schedule info
+     */
+    questionExtractCardIds(originalQuestionText: string): (string | null)[] {
+        const scheduling: RegExpMatchArray[] = [
+            ...originalQuestionText.matchAll(MULTI_SCHEDULING_EXTRACTOR),
+        ];
+
+        const result: (string | null)[] = [];
+        for (let i = 0; i < scheduling.length; i++) {
+            const match: RegExpMatchArray = scheduling[i];
+            const cardId: string | undefined = match[4]; // Card ID is in group 4
+            result.push(cardId || null);
         }
         return result;
     }

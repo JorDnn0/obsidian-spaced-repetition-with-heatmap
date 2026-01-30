@@ -4,8 +4,14 @@ export const SCHEDULING_INFO_REGEX =
     /^---\r?\n((?:.*\r?\n)*)sr-due: (.+)\r?\nsr-interval: (\d+)\r?\nsr-ease: (\d+)\r?\n((?:.*\r?\n)?)---/;
 export const YAML_FRONT_MATTER_REGEX = /^---\r?\n((?:.*\r?\n)*?)---/;
 
-export const MULTI_SCHEDULING_EXTRACTOR = /!([\d-]+),(\d+),(\d+)/gm;
+// Card ID format: :card-id:<uuid>
+// Full format: !<due-date>,<interval>,<ease>:card-id:<uuid>
+// Card ID is optional in parsing for backward compatibility during migration
+export const MULTI_SCHEDULING_EXTRACTOR = /!([\d-]+),(\d+),(\d+)(?::card-id:([a-zA-Z0-9_-]+))?/gm;
 export const LEGACY_SCHEDULING_EXTRACTOR = /<!--SR:([\d-]+),(\d+),(\d+)-->/gm;
+
+// Card ID validation regex (matches short-uuid format)
+export const CARD_ID_REGEX = /^[a-zA-Z0-9_-]{20,30}$/;
 export const OBSIDIAN_TAG_AT_STARTOFLINE_REGEX = /^#[^\s#]+/gi;
 
 // https://help.obsidian.md/Linking+notes+and+files/Internal+links#Link+to+a+block+in+a+note

@@ -9,6 +9,7 @@ import { Question, QuestionText } from "src/question";
 import { CardFrontBack, CardFrontBackUtil } from "src/question-type";
 import { SettingsUtil, SRSettings } from "src/settings";
 import { TopicPath, TopicPathList } from "src/topic-path";
+import { generateCardId } from "src/utils/card-id";
 import {
     splitNoteIntoFrontmatterAndContent,
     splitTextIntoLineArray,
@@ -127,6 +128,13 @@ export class NoteQuestionParser {
                     null,
                 );
 
+            // Extract card IDs from the question text
+            const dataStore = DataStore.getInstance();
+            const cardIds: (string | null)[] =
+                dataStore.questionExtractCardIds && typeof dataStore.questionExtractCardIds === "function"
+                    ? dataStore.questionExtractCardIds(question.questionText.original)
+                    : [];
+
             // we have some extra scheduling dates to delete
             const correctLength = cardFrontBackList.length;
             if (cardScheduleInfoList.length > correctLength) {
@@ -135,7 +143,11 @@ export class NoteQuestionParser {
             }
 
             // Create the list of card objects, and attach to the question
-            const cardList: Card[] = this.createCardList(cardFrontBackList, cardScheduleInfoList);
+            const cardList: Card[] = this.createCardList(
+                cardFrontBackList,
+                cardScheduleInfoList,
+                cardIds,
+            );
             question.setCardList(cardList);
             result.push(question);
         }
@@ -177,6 +189,7 @@ export class NoteQuestionParser {
     private createCardList(
         cardFrontBackList: CardFrontBack[],
         cardScheduleInfoList: RepItemScheduleInfo[],
+        cardIds: (string | null)[] = [],
     ): Card[] {
         const siblings: Card[] = [];
 
@@ -187,10 +200,22 @@ export class NoteQuestionParser {
             const hasScheduleInfo: boolean = i < cardScheduleInfoList.length;
             const schedule: RepItemScheduleInfo = cardScheduleInfoList[i];
 
+            // Get card ID from extracted list, or from schedule info, or generate new one
+            let cardId: string = null;
+            if (i < cardIds.length && cardIds[i]) {
+                cardId = cardIds[i];
+            } else if (schedule && (schedule as any).cardId) {
+                cardId = (schedule as any).cardId;
+            } else {
+                // Generate new card ID for cards without one
+                cardId = generateCardId();
+            }
+
             const cardObj: Card = new Card({
                 front,
                 back,
                 cardIdx: i,
+                cardId: cardId,
             });
 
             cardObj.scheduleInfo = hasScheduleInfo ? schedule : null;

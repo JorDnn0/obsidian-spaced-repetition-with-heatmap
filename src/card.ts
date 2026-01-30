@@ -5,6 +5,7 @@ import { Question } from "src/question";
 export class Card extends RepetitionItem {
     question: Question;
     cardIdx: number;
+    cardId: string; // Persistent unique identifier for this card (mandatory)
 
     // visuals
     front: string;

@@ -8,6 +8,7 @@ import { OsrAppCore } from "src/core";
 import { DataStoreAlgorithm } from "src/data-store-algorithm/data-store-algorithm";
 import { DataStoreInNoteAlgorithmOsr } from "src/data-store-algorithm/data-store-in-note-algorithm-osr";
 import { DataStore } from "src/data-stores/base/data-store";
+import { ReviewHistoryStore } from "src/data-stores/review-history-store";
 import { StoreInNotes } from "src/data-stores/notes/notes";
 import { CardListType, Deck, DeckTreeFilter } from "src/deck";
 import {
@@ -67,6 +68,17 @@ export default class SRPlugin extends Plugin {
         });
 
         await this.loadPluginData();
+
+        // Initialize review history store
+        try {
+            const reviewHistoryStore = ReviewHistoryStore.getInstance(
+                this.app.vault,
+                this.data.settings,
+            );
+            await reviewHistoryStore.initialize();
+        } catch (error) {
+            console.error("Failed to initialize review history store:", error);
+        }
 
         const noteReviewQueue = new NoteReviewQueue();
         this.nextNoteReviewHandler = new NextNoteReviewHandler(
