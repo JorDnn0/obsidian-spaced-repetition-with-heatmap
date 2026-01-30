@@ -1,3 +1,9 @@
+# NOTE: This is a WIP repo
+This repo tests the AI development flow discussed in https://www.youtube.com/watch?v=rmvDxxNubIg
+
+The goal is to add review history to Obsidian's Spaced Repetition plugin so that features like a heatmap can be added.
+
+Please find the original README below
 # Obsidian Spaced Repetition Plugin
 
 <img src="https://img.shields.io/github/downloads/st3v3nmw/obsidian-spaced-repetition/total" /> <img src="https://img.shields.io/github/downloads/st3v3nmw/obsidian-spaced-repetition/latest/total?style=flat-square" /> <img src="https://img.shields.io/github/manifest-json/v/st3v3nmw/obsidian-spaced-repetition?style=flat-square" /> <img alt="Codecov" src="https://img.shields.io/codecov/c/gh/st3v3nmw/obsidian-spaced-repetition">
